@@ -42,18 +42,38 @@ export const register = async (req, res) => {
 /* LOGGING IN */
 export const login = async (req, res) => {
   try {
-    console.log('login route')
+    console.log('login route');
     const { email, password } = req.body;
     const user = await User.findOne({ email: email });
     if (!user) return res.status(400).json({ msg: "User does not exist. " });
-    console.log('we got the z')
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials. " });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-    delete user.password;
-    res.status(200).json({ token, user });
+    // Set token to expire in 1 hour (3600 seconds)
+    const token = jwt.sign(
+      { id: user._id }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+    );
+    
+    // Don't mutate the original user object
+    const userResponse = { ...user.toObject() };
+    delete userResponse.password;
+    
+    res.status(200).json({ token, user: userResponse });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const verify = async (req, res) => {
+  try {
+   
+    
+    res.status(200).json({ verify: true});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
