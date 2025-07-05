@@ -62,9 +62,19 @@ const configureSocket = (io) => {
 
       console.log('registering', userId, peerId )
     });
+
+    //video calling registration
+
+    
     socket.on("register-reciever-to", ({reciever, caller}) => {
- console.log(reciever, caller)
+
  io.to(users[caller]?.socketId).emit('reciever-peer', reciever)
+    });
+
+     
+    socket.on("reject-call-from", ({ caller}) => {
+
+ io.to(users[caller]?.socketId).emit('call-rejected')
     });
     
 
@@ -183,7 +193,7 @@ const configureSocket = (io) => {
         .populate("participants", "firstName lastName picturePath")
         .populate("latestMessage");
         
-        console.log('Conversation updated:', updatedConversation);
+      
     
         // Step 3: Prepare the data to send to the other participant
         const messageToSend = {
